@@ -2,13 +2,14 @@ import asyncio
 from aiogram import Bot, Dispatcher
 
 from globals import TG_TOKEN, ADMIN_TG_ID
-from apps import core
+from apps import core, diary
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
 
 async def main():
     # Include the routers
+    dp.include_router(diary.router)
     dp.include_router(core.router)
 
     # Notify the admin that the bot has started

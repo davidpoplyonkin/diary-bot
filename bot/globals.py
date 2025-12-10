@@ -5,3 +5,15 @@ load_dotenv()
 
 TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
+HEALTH_METRICS = [
+    {
+        "metric": "pressure",
+        "verbose": "Pressure",
+    }, {
+        "metric": "pulse",
+        "verbose": "Pulse",
+    }, {
+        "metric": "weight",
+        "verbose": "Weight",
+    }
+]
