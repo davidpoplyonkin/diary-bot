@@ -21,7 +21,8 @@ async def cmd_help(message: Message):
 
     await message.answer((
         "/start - Start the first conversation with the bot\n"
-        "/help - Print the list of all available commands"
+        "/help - Print the list of all available commands\n"
+        "/enter - Print the list of all available health metrics"
     ))
 
 @router.message(StateFilter(None))
