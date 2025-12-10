@@ -23,3 +23,11 @@ async def cmd_help(message: Message):
         "/start - Start the first conversation with the bot\n"
         "/help - Print the list of all available commands"
     ))
+
+@router.message(StateFilter(None))
+async def default_handler(message: Message):
+    """
+    If the user sends an unknown message, recommend them to type /help.
+    """
+
+    await message.answer("Type /help, to get the list of all available commands.")
