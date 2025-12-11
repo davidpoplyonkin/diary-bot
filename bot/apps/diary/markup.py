@@ -20,3 +20,16 @@ def get_health_metrics_kb() -> InlineKeyboardBuilder:
     builder.adjust(1)
 
     return builder
+
+def get_cancel_btn() -> InlineKeyboardBuilder:
+    """
+    Return a builder for a cancel button.
+    """
+
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Cancel",
+        callback_data="cancel-hm",
+    )
+
+    return builder
