@@ -5,10 +5,14 @@ from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.formatting import Text, Bold, as_list
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from .markup import get_health_metrics_kb, get_confirmation_kb
 from .helpers import get_metric
-from globals import HEALTH_METRICS, ADMIN_TG_ID
+from globals import HEALTH_METRICS, ADMIN_TG_ID, IANA_TZ
+from .models import HealthMetric
+from ..core.models import User
 
 router = Router()
 
@@ -191,6 +195,7 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
     state_data = await state.get_data()
 
     summary_lines = [Text(Bold(callback.from_user.full_name))]
+    metrics = []
      
     for k, v in state_data.items():
         if k.startswith("val_"):
@@ -198,6 +203,17 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
             hm_details = HEALTH_METRICS.get(hm)
 
             summary_lines.append(f"{hm_details.get('name')} - {v}")
+            metrics.append((hm, v))
+
+    # Get the user Telegram ID
+    user_tg_id = callback.from_user.id
+
+    # Get today's date in the bot's timezone
+    date_utc = datetime.now(ZoneInfo("UTC"))
+    date_tz = date_utc.astimezone(ZoneInfo(IANA_TZ))
+
+    # Save the results to the database
+    await HealthMetric.insert_many(user_tg_id, date_tz, metrics)
 
     # Send the user results to admin.
     msg_text = as_list(*summary_lines)
