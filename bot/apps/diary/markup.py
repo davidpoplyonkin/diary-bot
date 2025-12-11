@@ -10,11 +10,12 @@ def get_health_metrics_kb() -> InlineKeyboardBuilder:
 
     builder = InlineKeyboardBuilder()
 
-    for i, hm in enumerate(HEALTH_METRICS):
-        builder.button(
-            text=hm["verbose"],
-            callback_data=f"enter-hm_{i}"
-        )
+    for hm, details in HEALTH_METRICS.items():
+        if details.get("first"):
+            builder.button(
+                text=details["button_text"],
+                callback_data=f"enter-{hm}"
+            )
 
     builder.adjust(1)
 
