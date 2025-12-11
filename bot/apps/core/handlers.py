@@ -3,6 +3,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram.filters import StateFilter
 
+from .models import User
+
 router = Router()
 
 @router.message(CommandStart(), StateFilter(None))
@@ -10,6 +12,11 @@ async def cmd_start(message: Message):
     """
     Answers to /start.
     """
+
+    await User.upsert_one(
+        tg_id=message.from_user.id,
+        full_name=message.from_user.full_name,
+    )
 
     await message.answer("Hello World!")
 

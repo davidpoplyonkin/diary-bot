@@ -1,8 +1,6 @@
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
+# Bot
 TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
 HEALTH_METRICS = {
@@ -29,3 +27,9 @@ HEALTH_METRICS = {
         "prompt": "Enter your weight(kg):"
     }
 }
+
+# Postgres
+POSTGRES_DB = os.environ.get("POSTGRES_DB")
+POSTGRES_HOST = "postgres" # Same as Docker Compose service name
+POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
+POSTGRES_USER = os.environ.get("POSTGRES_USER")

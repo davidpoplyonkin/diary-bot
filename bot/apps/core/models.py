@@ -1,0 +1,34 @@
+from database.pool import get_pool
+
+class User():
+    async def create_table():
+        """
+        Crete the `users` table if it doesn't exist.
+        """
+
+        pool = await get_pool()
+        
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    tg_id BIGINT UNIQUE NOT NULL,
+                    full_name VARCHAR(50)
+                );
+            """)
+
+    async def upsert_one(tg_id: int, full_name: str):
+        """
+        If the user doesn't yet exist, add them to the database.
+        Otherwise, update their name.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                INSERT INTO users (tg_id, full_name)
+                VALUES ($1, $2)
+                ON CONFLICT (tg_id)
+                DO UPDATE SET full_name = EXCLUDED.full_name
+            """, tg_id, full_name)
