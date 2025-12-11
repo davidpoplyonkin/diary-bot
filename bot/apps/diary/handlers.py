@@ -48,13 +48,10 @@ async def btn_metric(callback: CallbackQuery, state: FSMContext):
     msg_text = Text(Bold(hm_details.get("button_text")))
     msg_kwargs = msg_text.as_kwargs()
     msg_kwargs["reply_markup"] = None
-    await callback.message.edit_text(**msg_kwargs)
-
-    # Remove the inline keyboard.
-    callback.message.edit_text(
-        text=hm_details.get("button_text"),
-        reply_markup=None
-    )
+    try:
+        await callback.message.edit_text(**msg_kwargs)
+    except:
+        pass
 
     # Store the current metric name.
     await state.update_data(hm=hm)
@@ -167,7 +164,10 @@ async def btn_cancel(callback: CallbackQuery, state: FSMContext):
     await callback.answer()
 
     # Remove the inline keyboard.
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except:
+        pass
 
     msg_text = Text(Bold("Cancel"))
     msg_kwargs = msg_text.as_kwargs()
@@ -183,7 +183,10 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
     await callback.answer()
 
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except:
+        pass
 
     state_data = await state.get_data()
 
