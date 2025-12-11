@@ -8,6 +8,9 @@ bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
 
 async def main():
+    # Create tables
+    await core.User.create_table()
+
     # Include the routers
     dp.include_router(diary.router)
     dp.include_router(core.router)
