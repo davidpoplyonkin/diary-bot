@@ -3,6 +3,7 @@ import os
 # Bot
 TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
+IANA_TZ=os.environ.get("IANA_TZ")
 HEALTH_METRICS = {
     "sbp": {
         "name": "Systolic blood pressure",
