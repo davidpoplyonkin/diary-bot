@@ -31,7 +31,7 @@ async def cmd_enter(message: Message):
     )
 
 @router.callback_query(F.data.startswith("enter-"), StateFilter(None))
-async def get_metrics(callback: CallbackQuery, state: FSMContext):
+async def btn_metric(callback: CallbackQuery, state: FSMContext):
     """
     Asks the user to enter the first of a sequence of related metrics.
     """
@@ -70,7 +70,7 @@ async def get_metrics(callback: CallbackQuery, state: FSMContext):
     )
 
 @router.message(StateFilter(health_metrics_sg))
-async def process_metric(message: Message, state: FSMContext, bot: Bot):
+async def msg_metric(message: Message, state: FSMContext, bot: Bot):
     """
     Saves the value the user entered and proceeds with the next metric
     if there is one.
@@ -80,7 +80,7 @@ async def process_metric(message: Message, state: FSMContext, bot: Bot):
 
     # Remove the cancel button.
     try:
-        await bot.edit_message_text(
+        await bot.edit_message_reply_markup(
             chat_id=state_data.get("ans_chat_id"),
             message_id=state_data.get("ans_msg_id"),
             reply_markup=None
@@ -154,3 +154,20 @@ async def process_metric(message: Message, state: FSMContext, bot: Bot):
 
         # Let the user know that this was the last metric in a sequence.
         await message.answer("Done")
+
+@router.callback_query(F.data=="cancel-hm", StateFilter(health_metrics_sg))
+async def btn_cancel(callback: CallbackQuery, state: FSMContext):
+    """
+    Interrupt the sequence of health metrics.
+    """
+
+    await callback.answer()
+
+    # Remove the inline keyboard.
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    msg_text = Text(Bold("Cancel"))
+    msg_kwargs = msg_text.as_kwargs()
+    await callback.message.answer(**msg_kwargs)
+
+    await state.clear()
