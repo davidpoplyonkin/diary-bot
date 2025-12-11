@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.formatting import Text, Bold, as_list
 
-from .markup import get_health_metrics_kb
+from .markup import get_health_metrics_kb, get_confirmation_kb
 from .helpers import get_metric
 from globals import HEALTH_METRICS, ADMIN_TG_ID
 
@@ -18,6 +18,9 @@ health_metrics_sg = type(
     (StatesGroup,),
     {hm: State() for hm in HEALTH_METRICS.keys()},
 )
+
+class ConfirmationSG(StatesGroup):
+    confirmation = State()
 
 @router.message(Command("enter"), StateFilter(None))
 async def cmd_enter(message: Message):
@@ -113,13 +116,14 @@ async def msg_metric(message: Message, state: FSMContext, bot: Bot):
         )
 
         return
+    
+    # Save user input.
+    await state.update_data(**{f"val_{hm}": val})
 
     # If this wasn't the last metric in a sequence
     if hm_details.get("next"):
-        await state.update_data(**{
-            "hm": hm_details.get("next"), # Change the current health metric
-            f"val_{hm}": val, # Save user input.
-        })
+        # Change the current health metric
+        await state.update_data(hm=hm_details.get("next"))
 
         # Set the state of waiting for the next metric value.
         await state.set_state(getattr(health_metrics_sg, hm))
@@ -134,11 +138,14 @@ async def msg_metric(message: Message, state: FSMContext, bot: Bot):
             ans_chat_id=ans.chat.id,
         )
     else:
-        await state.clear()
-        state_data[f"val_{hm}"] = val # Save user input.
+        # Set the state of waiting for confirmation.
+        await state.set_state(ConfirmationSG.confirmation)
 
-        summary_lines = [Text(Bold(message.from_user.full_name))]
-        
+        # Updating `state_data` since it doesn't contain the last answer.
+        state_data = await state.get_data()
+
+        summary_lines = [Text(Bold("Doublecheck:"))]
+     
         for k, v in state_data.items():
             if k.startswith("val_"):
                 hm = k[4:] # Discard "val_"
@@ -146,16 +153,12 @@ async def msg_metric(message: Message, state: FSMContext, bot: Bot):
 
                 summary_lines.append(f"{hm_details.get('name')} - {v}")
 
-        # Send the user results to admin.
         msg_text = as_list(*summary_lines)
         msg_kwargs = msg_text.as_kwargs()
-        msg_kwargs["chat_id"] = ADMIN_TG_ID
-        await bot.send_message(**msg_kwargs)
+        msg_kwargs["reply_markup"] = get_confirmation_kb().as_markup()
+        await message.answer(**msg_kwargs)
 
-        # Let the user know that this was the last metric in a sequence.
-        await message.answer("Done")
-
-@router.callback_query(F.data=="cancel-hm", StateFilter(health_metrics_sg))
+@router.callback_query(F.data=="cancel-hm", StateFilter(health_metrics_sg, ConfirmationSG.confirmation))
 async def btn_cancel(callback: CallbackQuery, state: FSMContext):
     """
     Interrupt the sequence of health metrics.
@@ -169,5 +172,37 @@ async def btn_cancel(callback: CallbackQuery, state: FSMContext):
     msg_text = Text(Bold("Cancel"))
     msg_kwargs = msg_text.as_kwargs()
     await callback.message.answer(**msg_kwargs)
+
+    await state.clear()
+
+@router.callback_query(F.data=="submit-hm", StateFilter(ConfirmationSG.confirmation))
+async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """
+    Submit the sequence of health metrics.
+    """
+
+    await callback.answer()
+
+    await callback.message.edit_reply_markup(reply_markup=None)
+
+    state_data = await state.get_data()
+
+    summary_lines = [Text(Bold(callback.from_user.full_name))]
+     
+    for k, v in state_data.items():
+        if k.startswith("val_"):
+            hm = k[4:] # Discard "val_"
+            hm_details = HEALTH_METRICS.get(hm)
+
+            summary_lines.append(f"{hm_details.get('name')} - {v}")
+
+    # Send the user results to admin.
+    msg_text = as_list(*summary_lines)
+    msg_kwargs = msg_text.as_kwargs()
+    msg_kwargs["chat_id"] = ADMIN_TG_ID
+    await bot.send_message(**msg_kwargs)
+
+    # Let the user know that this was the last metric in a sequence.
+    await callback.message.answer("Done")
 
     await state.clear()
