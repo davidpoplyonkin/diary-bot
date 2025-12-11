@@ -1,6 +1,17 @@
 services:
+  postgres:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
   bot:
     build:
       context: ./bot
     env_file:
       - .env
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
