@@ -39,3 +39,26 @@ class HealthMetric():
 
         async with pool.acquire() as conn:
             await conn.execute(q, *q_args)
+
+    async def get_many(**kwargs):
+        """
+        Return the rows that meet the specified constraints on user_tg_id,
+        date, metric, value.
+        """
+
+        pool = await get_pool()
+
+        args = []
+        conditions = []
+
+        for j, i in enumerate(kwargs.items(), start=1):
+            k, v = i
+            args.append(v)
+            conditions.append(f"{k} = ${j}")
+
+        async with pool.acquire() as conn:
+            return await conn.fetch(f"""
+                SELECT *
+                FROM health_metrics
+                WHERE {' AND '.join(conditions)};
+            """, *args)
