@@ -57,6 +57,19 @@ async def btn_metric(callback: CallbackQuery, state: FSMContext):
     except:
         pass
 
+    # Get today's date in the bot's timezone
+    date_utc = datetime.now(ZoneInfo("UTC"))
+    date_tz = date_utc.astimezone(ZoneInfo(IANA_TZ))
+
+    # If the user already sent this metric today...
+    if await HealthMetric.get_many(
+        user_tg_id=callback.from_user.id,
+        date=date_tz,
+        metric=hm,
+    ):
+        await callback.message.answer("You already sent this metric today.")
+        return
+
     # Store the current metric name.
     await state.update_data(hm=hm)
 
