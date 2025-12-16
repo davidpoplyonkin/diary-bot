@@ -11,6 +11,7 @@ async def main():
     # Create tables
     await core.User.create_table()
     await diary.HealthMetric.create_table()
+    await notifications.Notification.create_table()
 
     # Include the routers
     dp.include_routers(
