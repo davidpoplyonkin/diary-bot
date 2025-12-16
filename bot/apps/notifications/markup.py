@@ -1,14 +1,27 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from globals import HEALTH_METRICS
+from .models import Notification
 
-def get_notifications_kb() -> InlineKeyboardBuilder:
+async def get_notifications_kb(user_tg_id) -> InlineKeyboardBuilder:
     """
     Return a builder for a keyboard with scheduled notifications as
     buttons and also the add button at the end.
     """
 
     builder = InlineKeyboardBuilder()
+
+    notifications = await Notification.get_many(user_tg_id)
+
+    for n in notifications:
+        hm = n.get("metric")
+        hm_details = HEALTH_METRICS.get(hm)
+
+        builder.button(
+            text=f"🗑️ {n.get('time')} {hm_details.get('button_text')}",
+            callback_data=f"del-not-{hm}"
+        )
+
 
     builder.button(
         text="+",
@@ -35,5 +48,25 @@ def get_metrics_kb() -> InlineKeyboardBuilder:
             )
 
     builder.adjust(1)
+
+    return builder
+
+def get_confirmation_kb() -> InlineKeyboardBuilder:
+    """
+    Return a builder for a keyboard cancel and submit buttons.
+    """
+
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Cancel",
+        callback_data=f"cancel-del-not"
+    )
+    builder.button(
+        text="Submit",
+        callback_data=f"submit-del-not"
+    )
+
+    builder.adjust(2)
 
     return builder
