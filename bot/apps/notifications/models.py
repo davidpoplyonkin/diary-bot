@@ -30,3 +30,30 @@ class Notification():
                 INSERT INTO notifications (user_tg_id, metric, time)
                 VALUES ($1, $2, $3)
             """, user_tg_id, metric, time)
+
+    async def get_many(user_tg_id: int):
+        """
+        Return the scheduled notifications for the specified user.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            return await conn.fetch(f"""
+                SELECT * FROM notifications
+                WHERE user_tg_id = $1
+                ORDER BY time;
+            """, user_tg_id)
+        
+    async def delete_many(user_tg_id: int, metric: str):
+        """
+        Remove the specified notification.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            await conn.execute(f"""
+                DELETE FROM notifications
+                WHERE user_tg_id = $1 AND metric = $2
+            """, user_tg_id, metric)
