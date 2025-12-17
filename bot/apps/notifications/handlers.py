@@ -9,7 +9,7 @@ from datetime import time
 import re
 
 from .markup import (get_notifications_kb, get_metrics_kb,
-                     get_confirmation_kb)
+                     get_confirmation_kb, get_cancel_btn)
 from .models import Notification
 from globals import HEALTH_METRICS
 
@@ -83,7 +83,10 @@ async def btn_add_not_hm(callback: CallbackQuery, state: FSMContext):
     await state.set_state(NotificationsSG.time)
     await state.update_data(hm=hm)
 
-    await callback.message.answer("When would you like to be notified? (hh:mm)")
+    await callback.message.answer(
+        text="When would you like to be notified? (hh:mm)",
+        reply_markup=get_cancel_btn().as_markup()
+    )
 
 @router.message(StateFilter(NotificationsSG.time))
 async def msg_time(message: Message, state: FSMContext):
@@ -150,6 +153,7 @@ async def btn_del_not(callback: CallbackQuery, state: FSMContext):
     )
 
 @router.callback_query(F.data=="cancel-del-not", StateFilter(ConfirmationSG.confirmation))
+@router.callback_query(F.data=="cancel-not", StateFilter(NotificationsSG.time))
 async def btn_cancel(callback: CallbackQuery, state: FSMContext):
     """
     Clear the state.

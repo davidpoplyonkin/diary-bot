@@ -60,13 +60,26 @@ def get_confirmation_kb() -> InlineKeyboardBuilder:
 
     builder.button(
         text="Cancel",
-        callback_data=f"cancel-del-not"
+        callback_data="cancel-del-not"
     )
     builder.button(
         text="Submit",
-        callback_data=f"submit-del-not"
+        callback_data="submit-del-not"
     )
 
     builder.adjust(2)
+
+    return builder
+
+def get_cancel_btn() -> InlineKeyboardBuilder:
+    """
+    Return a builder for a cancel button.
+    """
+
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Cancel",
+        callback_data="cancel-not",
+    )
 
     return builder
