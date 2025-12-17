@@ -1,11 +1,14 @@
 import asyncio
 from aiogram import Bot, Dispatcher
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from globals import TG_TOKEN, ADMIN_TG_ID
+from globals import TG_TOKEN, ADMIN_TG_ID, IANA_TZ
 from apps import core, diary, notifications
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
+
+scheduler = AsyncIOScheduler(timezone=IANA_TZ)
 
 async def main():
     # Create tables
@@ -24,7 +27,7 @@ async def main():
     await bot.send_message(chat_id=ADMIN_TG_ID, text="START")
 
     try:
-        await dp.start_polling(bot)
+        await dp.start_polling(bot, scheduler=scheduler)
     except Exception as e:
         await bot.send_message(chat_id=ADMIN_TG_ID, text=e)
 
