@@ -80,6 +80,16 @@ async def btn_add_not_hm(callback: CallbackQuery, state: FSMContext):
     except:
         pass
 
+    n = await Notification.get_one(
+        user_tg_id=callback.from_user.id,
+        metric=hm
+    )
+
+    # Prevent the user from creating multiple notifications for the same metric.
+    if n:
+        await callback.message.answer("You already have a notification for this metric.")
+        return
+
     await state.set_state(NotificationsSG.time)
     await state.update_data(hm=hm)
 
