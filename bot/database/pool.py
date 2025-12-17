@@ -1,7 +1,6 @@
 import asyncpg
 
-from globals import (POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD,
-                     POSTGRES_USER)
+from globals import POSTGRES_PASSWORD, POSTGRES_USER
 
 pool = None
 
@@ -14,8 +13,8 @@ async def get_pool():
 
     if pool is None:
         pool = await asyncpg.create_pool(
-            database=POSTGRES_DB,
-            host=POSTGRES_HOST,
+            database="bot",
+            host="postgres",
             password=POSTGRES_PASSWORD,
             user=POSTGRES_USER,
         )

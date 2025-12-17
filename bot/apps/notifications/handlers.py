@@ -1,16 +1,15 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import StateFilter
 from aiogram.utils.formatting import Text, Bold
 from aiogram.fsm.state import StatesGroup, State
-from datetime import time
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import re
 
 from .markup import (get_notifications_kb, get_metrics_kb,
                      get_confirmation_kb, get_cancel_btn)
-from .models import Notification
 from globals import HEALTH_METRICS
 
 router = Router()
@@ -21,15 +20,27 @@ class NotificationsSG(StatesGroup):
 class ConfirmationSG(StatesGroup):
     confirmation = State()
 
+async def notify(user_tg_id, metric, time):
+    # Bot is non-serializible, so can't pass it as an argument
+    from main import bot
+
+    hm_details = HEALTH_METRICS.get(metric)
+
+    await bot.send_message(
+        chat_id=user_tg_id,
+        text=f"Notification: {hm_details.get('button_text')}"
+    )
+
 @router.message(Command("notifications"), StateFilter(None))
-async def cmd_notifications(message: Message):
+async def cmd_notifications(message: Message, scheduler: AsyncIOScheduler):
     """
     Answers to /notifications command with a list of scheduled
     notifications in chronological order.
     """
 
     kb = await get_notifications_kb(
-        user_tg_id=message.from_user.id
+        user_tg_id=message.from_user.id,
+        scheduler=scheduler
     )
 
     await message.answer(
@@ -61,7 +72,11 @@ async def btn_add_not(callback: CallbackQuery):
     )
 
 @router.callback_query(F.data.startswith("add-not-"), StateFilter(None))
-async def btn_add_not_hm(callback: CallbackQuery, state: FSMContext):
+async def btn_add_not_hm(
+    callback: CallbackQuery,
+    state: FSMContext,
+    scheduler: AsyncIOScheduler
+):
     """
     Ask the user when they would like to be notified.
     """
@@ -80,29 +95,48 @@ async def btn_add_not_hm(callback: CallbackQuery, state: FSMContext):
     except:
         pass
 
-    n = await Notification.get_one(
-        user_tg_id=callback.from_user.id,
-        metric=hm
-    )
-
     # Prevent the user from creating multiple notifications for the same metric.
-    if n:
+    if scheduler.get_job(f"{callback.from_user.id}-{hm}"):
         await callback.message.answer("You already have a notification for this metric.")
         return
 
     await state.set_state(NotificationsSG.time)
     await state.update_data(hm=hm)
 
-    await callback.message.answer(
+    ans = await callback.message.answer(
         text="When would you like to be notified? (hh:mm)",
         reply_markup=get_cancel_btn().as_markup()
     )
 
+    # Record the answer ID in order to then remove the attached cancel
+    # button
+    await state.update_data(
+        ans_msg_id=ans.message_id,
+        ans_chat_id=ans.chat.id,
+    )
+
 @router.message(StateFilter(NotificationsSG.time))
-async def msg_time(message: Message, state: FSMContext):
+async def msg_time(
+    message: Message,
+    state: FSMContext,
+    bot: Bot,
+    scheduler: AsyncIOScheduler
+):
     """
-    Save the notification to the database and also launch `aioschedule`.
+    Schedule the notification.
     """
+
+    state_data = await state.get_data()
+
+    # Remove the cancel button.
+    try:
+        await bot.edit_message_reply_markup(
+            chat_id=state_data.get("ans_chat_id"),
+            message_id=state_data.get("ans_msg_id"),
+            reply_markup=None
+        )
+    except:
+        pass
 
     str_time = message.text
 
@@ -113,14 +147,23 @@ async def msg_time(message: Message, state: FSMContext):
         if (h < 24) and (m < 60): # both are guaranteed to be
             # non-negative
 
-            state_data = await state.get_data()
             await state.clear()
 
-            # Save to the database.
-            await Notification.insert_one(
-                user_tg_id=message.from_user.id,
-                metric=state_data.get("hm"),
-                time=time(h, m),
+            hm = state_data.get("hm")
+            user_tg_id = message.from_user.id
+
+            scheduler.add_job(
+                id=f"{user_tg_id}-{hm}",
+                replace_existing=True,
+                func=notify,
+                kwargs={
+                    "user_tg_id": user_tg_id,
+                    "metric": hm,
+                    "time": str_time,
+                },
+                trigger="cron",
+                hour=h,
+                minute=m,
             )
 
             msg_text = Text(Bold("Done"))
@@ -184,7 +227,11 @@ async def btn_cancel(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 @router.callback_query(F.data=="submit-del-not", StateFilter(ConfirmationSG.confirmation))
-async def btn_submit(callback: CallbackQuery, state: FSMContext):
+async def btn_submit(
+    callback: CallbackQuery,
+    state: FSMContext,
+    scheduler: AsyncIOScheduler
+):
     """
     Submit the sequence of health metrics.
     """
@@ -202,8 +249,8 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext):
     # Get the user Telegram ID
     user_tg_id = callback.from_user.id
 
-    # Delete the notification from the database
-    await Notification.delete_many(user_tg_id, hm)
+    # Remove the notification
+    scheduler.remove_job(f"{user_tg_id}-{hm}")
 
     # Let the user know that this metric was deleted
     await callback.message.answer("Done")
