@@ -13,9 +13,11 @@ idna==3.11
 magic-filter==1.0.12
 multidict==6.7.0
 propcache==0.4.1
+psycopg2-binary==2.9.11
 pydantic==2.12.5
 pydantic_core==2.41.5
 python-dotenv==1.2.1
+SQLAlchemy==2.0.45
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzlocal==5.3.1
