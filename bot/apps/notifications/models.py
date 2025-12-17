@@ -45,6 +45,20 @@ class Notification():
                 ORDER BY time;
             """, user_tg_id)
         
+    async def get_one(user_tg_id: int, metric: str):
+        """
+        Return the scheduled notifications for the specified user and
+        metric.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            return await conn.fetchrow(f"""
+                SELECT * FROM notifications
+                WHERE user_tg_id = $1 AND metric = $2;
+            """, user_tg_id, metric)
+        
     async def delete_many(user_tg_id: int, metric: str):
         """
         Remove the specified notification.
