@@ -17,13 +17,12 @@ jobstores = {
     ))
 }
 
-scheduler = AsyncIOScheduler(timezone=IANA_TZ, jobstores=jobstores)
+dp["scheduler"] = AsyncIOScheduler(timezone=IANA_TZ, jobstores=jobstores)
 
 async def main():
     # Create tables
     await core.User.create_table()
     await diary.HealthMetric.create_table()
-    await notifications.Notification.create_table()
 
     # Include the routers
     dp.include_routers(
@@ -32,13 +31,13 @@ async def main():
         core.router,
     )
 
-    scheduler.start()
+    dp["scheduler"].start()
 
     # Notify the admin that the bot has started
     await bot.send_message(chat_id=ADMIN_TG_ID, text="START")
 
     try:
-        await dp.start_polling(bot, scheduler=scheduler)
+        await dp.start_polling(bot)
     except Exception as e:
         await bot.send_message(chat_id=ADMIN_TG_ID, text=e)
 
