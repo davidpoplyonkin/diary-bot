@@ -8,11 +8,12 @@ from aiogram.utils.formatting import Text, Bold, as_list
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from .markup import get_health_metrics_kb, get_confirmation_kb
+from .markup import get_health_metrics_kb
+from ..core.markup import get_confirmation_kb
+from ..core.handlers import ConfirmationSG
 from .helpers import get_metric
-from globals import HEALTH_METRICS, ADMIN_TG_ID, IANA_TZ
+from globals import HEALTH_METRICS, ADMIN_TG_ID, TZ
 from .models import HealthMetric
-from ..core.models import User
 
 router = Router()
 
@@ -22,9 +23,6 @@ health_metrics_sg = type(
     (StatesGroup,),
     {hm: State() for hm in HEALTH_METRICS.keys()},
 )
-
-class ConfirmationSG(StatesGroup):
-    confirmation = State()
 
 @router.message(Command("enter"), StateFilter(None))
 async def cmd_enter(message: Message):
@@ -59,7 +57,7 @@ async def btn_metric(callback: CallbackQuery, state: FSMContext):
 
     # Get today's date in the bot's timezone
     date_utc = datetime.now(ZoneInfo("UTC"))
-    date_tz = date_utc.astimezone(ZoneInfo(IANA_TZ))
+    date_tz = date_utc.astimezone(ZoneInfo(TZ))
 
     # If the user already sent this metric today...
     if await HealthMetric.get_many(
@@ -169,28 +167,8 @@ async def msg_metric(message: Message, state: FSMContext, bot: Bot):
 
         msg_text = as_list(*summary_lines)
         msg_kwargs = msg_text.as_kwargs()
-        msg_kwargs["reply_markup"] = get_confirmation_kb().as_markup()
+        msg_kwargs["reply_markup"] = get_confirmation_kb("submit-hm").as_markup()
         await message.answer(**msg_kwargs)
-
-@router.callback_query(F.data=="cancel-hm", StateFilter(health_metrics_sg, ConfirmationSG.confirmation))
-async def btn_cancel(callback: CallbackQuery, state: FSMContext):
-    """
-    Interrupt the sequence of health metrics.
-    """
-
-    await callback.answer()
-
-    # Remove the inline keyboard.
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except:
-        pass
-
-    msg_text = Text(Bold("Cancel"))
-    msg_kwargs = msg_text.as_kwargs()
-    await callback.message.answer(**msg_kwargs)
-
-    await state.clear()
 
 @router.callback_query(F.data=="submit-hm", StateFilter(ConfirmationSG.confirmation))
 async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
@@ -223,7 +201,7 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
 
     # Get today's date in the bot's timezone
     date_utc = datetime.now(ZoneInfo("UTC"))
-    date_tz = date_utc.astimezone(ZoneInfo(IANA_TZ))
+    date_tz = date_utc.astimezone(ZoneInfo(TZ))
 
     # Save the results to the database
     await HealthMetric.insert_many(user_tg_id, date_tz, metrics)

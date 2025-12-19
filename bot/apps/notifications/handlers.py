@@ -8,28 +8,16 @@ from aiogram.fsm.state import StatesGroup, State
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import re
 
-from .markup import (get_notifications_kb, get_metrics_kb,
-                     get_confirmation_kb, get_cancel_btn)
+from .markup import get_notifications_kb, get_metrics_kb
+from ..core.markup import get_confirmation_kb, get_cancel_btn
+from ..core.handlers import ConfirmationSG
 from globals import HEALTH_METRICS
+from .helpers import notify
 
 router = Router()
 
 class NotificationsSG(StatesGroup):
     time = State()
-
-class ConfirmationSG(StatesGroup):
-    confirmation = State()
-
-async def notify(user_tg_id, metric, time):
-    # Bot is non-serializible, so can't pass it as an argument
-    from main import bot
-
-    hm_details = HEALTH_METRICS.get(metric)
-
-    await bot.send_message(
-        chat_id=user_tg_id,
-        text=f"Notification: {hm_details.get('button_text')}"
-    )
 
 @router.message(Command("notifications"), StateFilter(None))
 async def cmd_notifications(message: Message, scheduler: AsyncIOScheduler):
@@ -202,29 +190,8 @@ async def btn_del_not(callback: CallbackQuery, state: FSMContext):
             "Are you sure you want to delete the "
             f"{hm_details.get('button_text')} notification"
         ),
-        reply_markup=get_confirmation_kb().as_markup()
+        reply_markup=get_confirmation_kb("submit-del-not").as_markup()
     )
-
-@router.callback_query(F.data=="cancel-del-not", StateFilter(ConfirmationSG.confirmation))
-@router.callback_query(F.data=="cancel-not", StateFilter(NotificationsSG.time))
-async def btn_cancel(callback: CallbackQuery, state: FSMContext):
-    """
-    Clear the state.
-    """
-
-    await callback.answer()
-
-    # Remove the inline keyboard.
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except:
-        pass
-
-    msg_text = Text(Bold("Cancel"))
-    msg_kwargs = msg_text.as_kwargs()
-    await callback.message.answer(**msg_kwargs)
-
-    await state.clear()
 
 @router.callback_query(F.data=="submit-del-not", StateFilter(ConfirmationSG.confirmation))
 async def btn_submit(
