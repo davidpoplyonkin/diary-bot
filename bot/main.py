@@ -6,9 +6,13 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from globals import (TG_TOKEN, ADMIN_TG_ID, TZ, POSTGRES_PASSWORD,
                      POSTGRES_USER)
 from apps import core, diary, notifications, admin
+from apps.core.middleware import BlacklistMiddleware
 
 bot = Bot(token=TG_TOKEN)
+
 dp = Dispatcher()
+dp.message.outer_middleware(BlacklistMiddleware())
+dp.callback_query.outer_middleware(BlacklistMiddleware())
 
 jobstores = {
     "default": SQLAlchemyJobStore(url=(

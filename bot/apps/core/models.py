@@ -34,6 +34,20 @@ class User():
                 DO UPDATE SET full_name = EXCLUDED.full_name
             """, tg_id, full_name)
 
+    async def get_one(tg_id: int):
+        """
+        Return the user with the specified ID.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            return await conn.fetchrow("""
+                SELECT *
+                FROM users
+                WHERE tg_id = $1;
+            """, tg_id)
+
     async def blacklist(tg_id: int):
         """
         Add the specified user to the black list.
