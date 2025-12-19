@@ -8,7 +8,7 @@ from aiogram.utils.formatting import Text, Bold, as_list
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from .markup import get_health_metrics_kb
+from .markup import get_health_metrics_kb, get_summary_kb
 from ..core.markup import get_confirmation_kb
 from ..core.handlers import ConfirmationSG
 from .helpers import get_metric
@@ -210,6 +210,7 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
     msg_text = as_list(*summary_lines)
     msg_kwargs = msg_text.as_kwargs()
     msg_kwargs["chat_id"] = ADMIN_TG_ID
+    msg_kwargs["reply_markup"] = get_summary_kb(user_tg_id).as_markup()
     await bot.send_message(**msg_kwargs)
 
     # Let the user know that this was the last metric in a sequence.
