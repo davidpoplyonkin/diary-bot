@@ -5,7 +5,7 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from globals import (TG_TOKEN, ADMIN_TG_ID, TZ, POSTGRES_PASSWORD,
                      POSTGRES_USER)
-from apps import core, diary, notifications
+from apps import core, diary, notifications, admin
 
 bot = Bot(token=TG_TOKEN)
 dp = Dispatcher()
@@ -26,6 +26,7 @@ async def main():
 
     # Include the routers
     dp.include_routers(
+        admin.router,
         notifications.router,
         diary.router,
         core.router,

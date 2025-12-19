@@ -13,7 +13,8 @@ class User():
                 CREATE TABLE IF NOT EXISTS users (
                     id SERIAL PRIMARY KEY,
                     tg_id BIGINT UNIQUE NOT NULL,
-                    full_name VARCHAR(50)
+                    full_name VARCHAR(50),
+                    is_blacklisted BOOLEAN DEFAULT FALSE
                 );
             """)
 
@@ -32,3 +33,17 @@ class User():
                 ON CONFLICT (tg_id)
                 DO UPDATE SET full_name = EXCLUDED.full_name
             """, tg_id, full_name)
+
+    async def blacklist(tg_id: int):
+        """
+        Add the specified user to the black list.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            await conn.execute("""
+                UPDATE users
+                SET is_blacklisted = TRUE
+                WHERE tg_id = $1
+            """, tg_id)

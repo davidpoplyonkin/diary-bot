@@ -20,3 +20,21 @@ def get_health_metrics_kb() -> InlineKeyboardBuilder:
     builder.adjust(1)
 
     return builder
+
+
+def get_summary_kb(user_tg_id) -> InlineKeyboardBuilder:
+    """
+    Return a builder for a keyboard to attach to the message sent to
+    the admin.
+    """
+
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Blacklist",
+        callback_data=f"blacklist-{user_tg_id}"
+    )
+
+    builder.adjust(1)
+
+    return builder
