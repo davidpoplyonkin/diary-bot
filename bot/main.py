@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
-from globals import (TG_TOKEN, ADMIN_TG_ID, IANA_TZ, POSTGRES_PASSWORD,
+from globals import (TG_TOKEN, ADMIN_TG_ID, TZ, POSTGRES_PASSWORD,
                      POSTGRES_USER)
 from apps import core, diary, notifications
 
@@ -17,7 +17,7 @@ jobstores = {
     ))
 }
 
-dp["scheduler"] = AsyncIOScheduler(timezone=IANA_TZ, jobstores=jobstores)
+dp["scheduler"] = AsyncIOScheduler(timezone=TZ, jobstores=jobstores)
 
 async def main():
     # Create tables
