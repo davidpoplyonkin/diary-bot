@@ -10,11 +10,11 @@ def get_confirmation_kb(
     builder = InlineKeyboardBuilder()
 
     builder.button(
-        text="Cancel",
+        text="Скасувати",
         callback_data="cancel"
     )
     builder.button(
-        text="Submit",
+        text="Надіслати",
         callback_data=submit_callback_data
     )
 
@@ -27,7 +27,7 @@ def get_cancel_btn() -> InlineKeyboardBuilder:
 
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="Cancel",
+        text="Скасувати",
         callback_data="cancel",
     )
 

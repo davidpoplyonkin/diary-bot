@@ -3,7 +3,7 @@ services:
     image: postgres:17
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - /root/diary_bot/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
       - .env
   bot:
