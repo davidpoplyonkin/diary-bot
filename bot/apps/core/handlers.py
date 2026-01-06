@@ -7,6 +7,7 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.formatting import Text, Bold, as_list
 
 from .models import User
+from globals import COMMANDS
 
 router = Router()
 
@@ -43,13 +44,10 @@ async def cmd_help(message: Message):
     Prints the list of all available commands.
     """
 
-    msg_lines = [
-        Text(Bold("Ось що я вмію:")),
-        Text("/start - Почати першу розмову з ботом"),
-        Text("/help - Переглянути повний список доступних команд"),
-        Text("/enter - Внести дані"),
-        Text("/notifications - Налаштування нагадувань")
-    ]
+    msg_lines = (
+        [Text(Bold("Ось що я вмію:"))] +
+        [Text(f"{cmd.get('command')} - {cmd.get('description')}") for cmd in COMMANDS]
+    )
     msg_text = as_list(*msg_lines)
     msg_kwargs = msg_text.as_kwargs()
     await message.answer(**msg_kwargs)

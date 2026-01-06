@@ -3,6 +3,21 @@ import os
 # Bot
 TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
+COMMANDS=[
+    {
+        "command": "/start",
+        "description": "Почати першу розмову з ботом"
+    }, {
+        "command": "/help",
+        "description": "Переглянути повний список доступних команд"
+    }, {
+        "command": "/enter",
+        "description": "Внести дані"
+    }, {
+        "command": "/notifications",
+        "description": "Налаштування нагадувань"
+    }
+]
 TZ=os.environ.get("TZ")
 HEALTH_METRICS = {
     "sbpm": {
