@@ -2,9 +2,10 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from aiogram.types import BotCommand
 
 from globals import (TG_TOKEN, ADMIN_TG_ID, TZ, POSTGRES_PASSWORD,
-                     POSTGRES_USER)
+                     POSTGRES_USER, COMMANDS)
 from apps import core, diary, notifications, admin
 from apps.core.middleware import BlacklistMiddleware
 
@@ -37,6 +38,9 @@ async def main():
     )
 
     dp["scheduler"].start()
+
+    # Create the drop-up menu with the available commands
+    await bot.set_my_commands([BotCommand(**cmd) for cmd in COMMANDS])
 
     # Notify the admin that the bot has started
     await bot.send_message(chat_id=ADMIN_TG_ID, text="START")
