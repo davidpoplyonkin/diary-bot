@@ -5,27 +5,43 @@ TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
 TZ=os.environ.get("TZ")
 HEALTH_METRICS = {
-    "sbp": {
-        "name": "Systolic blood pressure",
+    "sbpm": {
+        "name": "Систолічний кров’яний тиск",
         "first": True,
-        "button_text": "Pressure",
-        "prompt": "Enter your systolic blood pressure:",
-        "next": "dbp", 
+        "button_text": "Тиск (ранок)",
+        "prompt": "Введіть свій систолічний кров’яний тиск:",
+        "next": "dbpm", 
     },
-    "dbp": {
-        "name": "Diastolic blood pressure",
-        "prompt": "Enter your diastolic blood pressure:",
-        "next": "pulse",
+    "dbpm": {
+        "name": "Діастолічний кров’яний тиск",
+        "prompt": "Введіть свій діастолічний кров’яний тиск:",
+        "next": "pm",
     },
-    "pulse": {
-        "name": "Pulse",
-        "prompt": "Enter your pulse:",
+    "pm": {
+        "name": "Пульс",
+        "prompt": "Введіть свій пульс:",
+    },
+    "sbpe": {
+        "name": "Систолічний кров’яний тиск",
+        "first": True,
+        "button_text": "Тиск (вечір)",
+        "prompt": "Введіть свій систолічний кров’яний тиск:",
+        "next": "dbpe", 
+    },
+    "dbpe": {
+        "name": "Діастолічний кров’яний тиск",
+        "prompt": "Введіть свій діастолічний кров’яний тиск:",
+        "next": "pe",
+    },
+    "pe": {
+        "name": "Пульс",
+        "prompt": "Введіть свій пульс:",
     },
     "weight": {
-        "name": "Weight",
+        "name": "Вага",
         "first": True,
-        "button_text": "Weight",
-        "prompt": "Enter your weight(kg):"
+        "button_text": "Вага",
+        "prompt": "Введіть свою вагу (кг):"
     }
 }
 

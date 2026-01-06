@@ -1,5 +1,6 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
+from aiogram.utils.formatting import Text
 
 from globals import ADMIN_TG_ID
 
@@ -24,4 +25,6 @@ class AdminOnlyMiddleware(BaseMiddleware):
         if (user_tg_id == int(ADMIN_TG_ID)):
             return await handler(event, data)
         
-        return await message.answer("This is an admin-only command.")
+        msg_text = Text("Це команда лише для адміністратора.")
+        msg_kwargs = msg_text.as_kwargs()
+        return await message.answer(**msg_kwargs)

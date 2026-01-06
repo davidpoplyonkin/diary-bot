@@ -30,10 +30,11 @@ async def cmd_enter(message: Message):
     Answers to /enter with a list of available health metrics.
     """
 
-    await message.answer(
-        "Choose one of the following health metrics:",
-        reply_markup=get_health_metrics_kb().as_markup()
-    )
+    msg_text = Text("📊 ", Bold("Який показник ви хочете зафіксувати?"))
+    msg_kwargs = msg_text.as_kwargs()
+    msg_kwargs["reply_markup"] = get_health_metrics_kb().as_markup()
+
+    await message.answer(**msg_kwargs)
 
 @router.callback_query(F.data.startswith("enter-"), StateFilter(None))
 async def btn_metric(callback: CallbackQuery, state: FSMContext):
@@ -65,7 +66,17 @@ async def btn_metric(callback: CallbackQuery, state: FSMContext):
         date=date_tz,
         metric=hm,
     ):
-        await callback.message.answer("You already sent this metric today.")
+        msg_lines = [
+            Text(Bold("Досягнуто ліміт вимірювань.")),
+            Text(
+                "Ми встановили обмеження (1 запис на добу), щоб ваші "
+                "звіти залишалися чіткими та зрозумілими."
+            )
+        ]
+        msg_text = as_list(*msg_lines)
+        msg_kwargs = msg_text.as_kwargs()
+
+        await callback.message.answer(**msg_kwargs)
         return
 
     # Store the current metric name.
@@ -118,7 +129,7 @@ async def msg_metric(message: Message, state: FSMContext, bot: Bot):
     if not input_valid:
         # Don't change the state and ask the user to enter a valid
         # number.
-        ans = await get_metric(message, state, "Not a number. Try again:")
+        ans = await get_metric(message, state, "Не число. Спробуйте ще раз:")
 
         # Record the answer ID in order to then remove the attached cancel
         # button
@@ -156,7 +167,7 @@ async def msg_metric(message: Message, state: FSMContext, bot: Bot):
         # Updating `state_data` since it doesn't contain the last answer.
         state_data = await state.get_data()
 
-        summary_lines = [Text(Bold("Doublecheck:"))]
+        summary_lines = [Text("📥 ", Bold("Записати ці дані у щоденник?"))]
      
         for k, v in state_data.items():
             if k.startswith("val_"):
@@ -213,7 +224,16 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
     msg_kwargs["reply_markup"] = get_summary_kb(user_tg_id).as_markup()
     await bot.send_message(**msg_kwargs)
 
+    msg_text = Text(
+        Bold("Готово! "),
+        (
+            "Я зафіксував ваші дані. Щоденне вимірювання — це "
+            "важливий крок до міцного здоров'я."
+        )
+    )
+    msg_kwargs = msg_text.as_kwargs()
+
     # Let the user know that this was the last metric in a sequence.
-    await callback.message.answer("Done")
+    await callback.message.answer(**msg_kwargs)
 
     await state.clear()

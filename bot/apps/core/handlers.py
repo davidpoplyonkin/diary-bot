@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.utils.formatting import Text, Bold
+from aiogram.utils.formatting import Text, Bold, as_list
 
 from .models import User
 
@@ -24,7 +24,18 @@ async def cmd_start(message: Message):
         full_name=message.from_user.full_name,
     )
 
-    await message.answer("Hello World!")
+    msg_lines = [
+        Text(Bold("Ласкаво просимо до BioGraph (Біометричні графіки)!")),
+        Text((
+            "Радий бачити вас тут. Я допоможу вам стежити за важливими "
+            "показниками вашого здоров’я та перетворювати сухі цифри на "
+            "наочні звіти."
+        )),
+        Text("Введіть /help, щоб переглянути повний список доступних команд.")
+    ]
+    msg_text = as_list(*msg_lines)
+    msg_kwargs = msg_text.as_kwargs()
+    await message.answer(**msg_kwargs)
 
 @router.message(Command("help"), StateFilter(None))
 async def cmd_help(message: Message):
@@ -32,12 +43,16 @@ async def cmd_help(message: Message):
     Prints the list of all available commands.
     """
 
-    await message.answer((
-        "/start - Start the first conversation with the bot\n"
-        "/help - Print the list of all available commands\n"
-        "/enter - Print the list of all available health metrics\n"
-        "/notifications - Print the list of all scheduled notifications"
-    ))
+    msg_lines = [
+        Text(Bold("Ось що я вмію:")),
+        Text("/start - Почати першу розмову з ботом"),
+        Text("/help - Переглянути повний список доступних команд"),
+        Text("/enter - Внести дані"),
+        Text("/notifications - Налаштування нагадувань")
+    ]
+    msg_text = as_list(*msg_lines)
+    msg_kwargs = msg_text.as_kwargs()
+    await message.answer(**msg_kwargs)
 
 @router.callback_query(F.data=="cancel")
 async def btn_cancel(callback: CallbackQuery, state: FSMContext):
@@ -53,7 +68,7 @@ async def btn_cancel(callback: CallbackQuery, state: FSMContext):
     except:
         pass
 
-    msg_text = Text(Bold("Cancel"))
+    msg_text = Text(Bold("Скасувати"))
     msg_kwargs = msg_text.as_kwargs()
     await callback.message.answer(**msg_kwargs)
 
@@ -64,5 +79,15 @@ async def msg_unknown(message: Message):
     """
     If the user sends an unknown message, recommend them to type /help.
     """
-
-    await message.answer("Type /help, to get the list of all available commands.")
+    
+    msg_lines = [
+        Text(Bold("Команду не розпізнано.")),
+        Text((
+            "Перевірте правильність введення або скористайтеся "
+            "розділом /help, де зібрані всі доступні функції та "
+            "приклади записів."
+        ))
+    ]
+    msg_text = as_list(*msg_lines)
+    msg_kwargs = msg_text.as_kwargs()
+    await message.answer(**msg_kwargs)
