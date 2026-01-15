@@ -22,13 +22,18 @@ def get_health_metrics_kb() -> InlineKeyboardBuilder:
     return builder
 
 
-def get_summary_kb(user_tg_id) -> InlineKeyboardBuilder:
+def get_summary_kb(user_tg_id, metric) -> InlineKeyboardBuilder:
     """
     Return a builder for a keyboard to attach to the message sent to
     the admin.
     """
 
     builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text="Chart",
+        callback_data=f"chart-{user_tg_id}-{metric}"
+    )
 
     builder.button(
         text="Blacklist",
