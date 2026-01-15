@@ -62,3 +62,25 @@ class HealthMetric():
                 FROM health_metrics
                 WHERE {' AND '.join(conditions)};
             """, *args)
+        
+    async def get_recent(
+            user_tg_id: int,
+            metric: str,
+            date: str,
+            window: int,
+        ):
+        """
+        Return the records newer than `date` - `window`.
+        """
+
+        pool = await get_pool()
+
+        async with pool.acquire() as conn:
+            return await conn.fetch("""
+                SELECT *
+                FROM health_metrics
+                WHERE user_tg_id = $1
+                    AND metric = $2
+                    AND date > $3::date - (CAST($4 AS INT) * INTERVAL '1 day')
+                    AND date <= $3::date;
+            """, user_tg_id, metric, date, window)

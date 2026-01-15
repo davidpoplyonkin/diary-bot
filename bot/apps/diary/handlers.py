@@ -221,7 +221,7 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
     msg_text = as_list(*summary_lines)
     msg_kwargs = msg_text.as_kwargs()
     msg_kwargs["chat_id"] = ADMIN_TG_ID
-    msg_kwargs["reply_markup"] = get_summary_kb(user_tg_id).as_markup()
+    msg_kwargs["reply_markup"] = get_summary_kb(user_tg_id, hm).as_markup()
     await bot.send_message(**msg_kwargs)
 
     msg_text = Text(
