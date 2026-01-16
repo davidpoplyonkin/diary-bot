@@ -92,7 +92,7 @@ async def reply_chart(
 
         combined_img.save(buffer, format="PNG")
         
-    elif metric == "weight":
+    elif metric in ["weight", "glf", "glp", "ttr"]:
         # Retrieve data from the database
         rows = await HealthMetric.get_recent(
             user_tg_id=user_tg_id,
@@ -110,9 +110,16 @@ async def reply_chart(
         # Create the chart
         sns.lineplot(x="date", y="value", data=df)
 
+        label_dict = {
+            "weight": "Weight (kg)",
+            "glf": "Glucose (fasting)",
+            "glp": "Glucose (postprandial)",
+            "ttr": "Testosterone"
+        }
+
         plt.xticks(rotation=45, ha="right")
         plt.xlabel("Date")
-        plt.ylabel("Weight (kg)")
+        plt.ylabel(label_dict.get(metric))
 
         plt.tight_layout()
 
