@@ -81,3 +81,6 @@ HEALTH_METRICS = {
 # Postgres
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
+
+# Dashboard
+DASHBOARD_URL = os.environ.get("DASHBOARD_URL")

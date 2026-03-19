@@ -1,0 +1,4 @@
+html, body, #root, #chart {
+  height: var(--tg-viewport-height);
+  margin: 0;
+}
