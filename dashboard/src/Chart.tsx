@@ -1,6 +1,9 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
+import { AxiosError } from 'axios';
 
+import ApiResponse from './types/ApiResponse';
+import api from './helpers/api';
 
 function Chart() {
   // Get everything after `?` from the URL
@@ -11,7 +14,10 @@ function Chart() {
   const patient = urlParams.get('patient') || '';
   const metric = urlParams.get('metric') || '';
 
-  const [state, setState] = React.useState({        
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const chart = {        
     series: [{
       data: [
         { x: '05/06/2014 00:00', y: 111 },
@@ -52,7 +58,7 @@ function Chart() {
         size: 0,
       },
       title: {
-        text: patient,
+        text: data?.message,
         align: 'left' as const
       },
       fill: {
@@ -77,13 +83,33 @@ function Chart() {
          enabled: false
       }
     },         
-  });
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch the data
+        const response = await api.get('/')
+        setData(response.data);
+      } catch (err) {
+        const axiosError = err as AxiosError;
+        setError(axiosError.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array to run only once on mount
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
   
   return (
       <div id='chart'>
           <ReactApexChart
-            options={state.options}
-            series={state.series}
+            options={chart.options}
+            series={chart.series}
             type='area'
             width='100%'
             height='100%'
