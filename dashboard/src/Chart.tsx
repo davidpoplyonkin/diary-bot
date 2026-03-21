@@ -14,6 +14,8 @@ function Chart() {
   const patient = urlParams.get('patient') || '';
   const metric = urlParams.get('metric') || '';
 
+  const tg_palette = window.Telegram.WebApp.themeParams;
+
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +39,7 @@ function Chart() {
     }],
     options: {
       chart: {
+        foreColor: tg_palette.text_color,
         type: 'area' as const,
         stacked: false,
         zoom: {
@@ -47,7 +50,8 @@ function Chart() {
         toolbar: {
           autoSelected: 'zoom' as const,
           tools: {
-            reset: false // Rescales the chart, but not the axes
+            reset: false, // Rescales the chart, but not the axes
+            download: false,
           }
         }
       },
@@ -62,6 +66,7 @@ function Chart() {
         align: 'left' as const
       },
       fill: {
+        colors: [tg_palette.button_color],
         type: 'gradient' as const,
         gradient: {
           shadeIntensity: 1,
@@ -106,7 +111,7 @@ function Chart() {
   if (error) return <p>Error: {error}</p>;
   
   return (
-      <div id='chart'>
+      <div className="chart">
           <ReactApexChart
             options={chart.options}
             series={chart.series}

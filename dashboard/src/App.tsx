@@ -1,14 +1,10 @@
 import Chart from './Chart';
 
 function App() {
-  const name = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name
-  
-  return (
-    <div>
-      <p>{name}</p>
-      <Chart />
-    </div>
-  );
+  window.Telegram.WebApp.setHeaderColor('secondary_bg_color');
+  window.Telegram.WebApp.requestFullscreen();
+
+  return <Chart />;
 }
 
 export default App;
