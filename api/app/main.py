@@ -11,11 +11,12 @@ from urllib.parse import parse_qsl
 import json
 from datetime import datetime, timezone, timedelta
 from time import time
+import os
 
-# FIXME: to environment variables
-TG_TOKEN = ""
-ADMIN_TG_ID=""
-JWT_SECRET = ""
+TG_TOKEN = os.getenv("TG_TOKEN", "")
+ADMIN_TG_ID = os.getenv("ADMIN_TG_ID", "")
+API_ALLOW_ORIGINS = os.getenv("API_ALLOW_ORIGINS", "").split(",")
+JWT_SECRET = os.getenv("JWT_SECRET", "")
 JWT_ALGORITHM = "HS256"
 JWT_EXP_SECONDS = 1800
 
@@ -25,10 +26,7 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://dashboard-pi-six-71.vercel.app",
-        "https://dashboard-pi-six-71.vercel.app/",
-    ],
+    allow_origins=API_ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -3,7 +3,7 @@ import axios, { InternalAxiosRequestConfig } from 'axios';
 import Token from '../types/Token'
 
 const api = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Holds the pending request for a new token
@@ -45,7 +45,7 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 
       // Reach out to the auth endpoint
       tokenPromise = axios.post<Token>(
-        '',
+        import.meta.env.VITE_API_URL + '/auth/token',
         null,
         { headers: { 'X-Telegram-Init-Data': window.Telegram.WebApp.initData } }
 
