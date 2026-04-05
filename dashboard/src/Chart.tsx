@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { AxiosError } from 'axios';
 
-import ApiResponse from './types/ApiResponse';
+import UserMetrics from './types/UserMetrics';
 import api from './helpers/api';
 
 function Chart() {
@@ -16,26 +16,12 @@ function Chart() {
 
   const tg_palette = window.Telegram.WebApp.themeParams;
 
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [data, setData] = useState<UserMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const chart = {        
     series: [{
-      data: [
-        { x: '05/06/2014 00:00', y: 111 },
-        { x: '05/07/2014 00:00', y: 111 },
-        { x: '05/08/2014 00:00', y: 112 },
-        { x: '05/09/2014 00:00', y: 113 },
-        { x: '05/10/2014 00:00', y: 115 },
-        { x: '05/11/2014 00:00', y: 118 },
-        { x: '05/12/2014 00:00', y: 113 },
-        { x: '05/13/2014 00:00', y: 121 },
-        { x: '05/14/2014 00:00', y: 134 },
-        { x: '05/15/2014 00:00', y: 155 },
-        { x: '05/16/2014 00:00', y: 189 },
-        { x: '05/17/2014 00:00', y: 144 },
-        { x: '05/18/2014 00:00', y: 233 },
-      ]
+      data: data?.metrics.map(m => ({ x: m.date, y: m.value })) || []
     }],
     options: {
       chart: {
@@ -62,7 +48,7 @@ function Chart() {
         size: 0,
       },
       title: {
-        text: data?.message,
+        text: data?.user.full_name,
         align: 'left' as const
       },
       fill: {
@@ -94,7 +80,7 @@ function Chart() {
     const fetchData = async () => {
       try {
         // Fetch the data
-        const response = await api.get('/')
+        const response = await api.get<UserMetrics>(`/users/${patient}/metrics/${metric}`);
         setData(response.data);
       } catch (err) {
         const axiosError = err as AxiosError;

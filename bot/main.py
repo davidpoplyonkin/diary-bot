@@ -25,10 +25,6 @@ jobstores = {
 dp["scheduler"] = AsyncIOScheduler(timezone=TZ, jobstores=jobstores)
 
 async def main():
-    # Create tables
-    await core.User.create_table()
-    await diary.HealthMetric.create_table()
-
     # Include the routers
     dp.include_routers(
         admin.router,

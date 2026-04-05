@@ -1,0 +1,11 @@
+import os
+
+TG_TOKEN = os.getenv("TG_TOKEN")
+ADMIN_TG_ID = os.getenv("ADMIN_TG_ID")
+API_ALLOW_ORIGINS = os.getenv("API_ALLOW_ORIGINS").split(",")
+
+JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_ALGORITHM = "HS256"
+JWT_EXP_SECONDS = 1800
+
+DATABASE_URL = os.getenv("DATABASE_URL")

@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE 8000
 
-CMD ["fastapi", "run", "app/main.py", "--proxy-headers"]
+CMD alembic upgrade head && fastapi run app/main.py
