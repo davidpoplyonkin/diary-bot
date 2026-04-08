@@ -2,8 +2,13 @@ services:
   api:
     build:
       context: ./api
-    env_file:
-      - ./api/.env
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - API_ALLOW_ORIGINS=${API_ALLOW_ORIGINS}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TG_TOKEN=${TG_TOKEN}
+      - ADMIN_TG_ID=${ADMIN_TG_ID}
     depends_on:
       - postgres
     networks:
@@ -11,8 +16,8 @@ services:
   dashboard:
     build:
       context: ./dashboard
-    env_file:
-      - ./dashboard/.env
+    environment:
+      - VITE_API_URL=${API_URL}
     depends_on:
       - api
     networks:
@@ -30,10 +35,16 @@ services:
   bot:
     build:
       context: ./bot
-    env_file:
-      - ./bot/.env
+    environment:
+      - TG_TOKEN=${TG_TOKEN}
+      - ADMIN_TG_ID=${ADMIN_TG_ID}
+      - TZ=${TZ}
+      - API_URL=${API_URL}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DASHBOARD_URL=${DASHBOARD_URL}
     depends_on:
-      - postgres
+      - api
     networks:
       - internal
   postgres:
@@ -41,8 +52,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-    env_file:
-      - ./postgres/.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - TZ=${TZ}
     networks:
       - internal
 volumes:

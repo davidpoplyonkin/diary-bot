@@ -5,11 +5,10 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 import os
-from dotenv import load_dotenv
-load_dotenv(".env")
 
 from app.models import *
 from app.database import Base
+from app.globals import DATABASE_URL
 # from `api` folder
 # python -m alembic revision --autogenerate -m "..."
 
@@ -22,7 +21,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
