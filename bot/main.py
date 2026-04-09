@@ -3,15 +3,18 @@ from aiogram import Bot, Dispatcher
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from aiogram.types import BotCommand
+from aiogram.fsm.storage.redis import RedisStorage
 
 from globals import (TG_TOKEN, ADMIN_TG_ID, TZ, POSTGRES_PASSWORD,
-                     POSTGRES_USER, COMMANDS)
+                     POSTGRES_USER, COMMANDS, REDIS_PASSWORD)
 from apps import core, diary, notifications, admin
 from apps.core.middleware import BlacklistMiddleware
 
 bot = Bot(token=TG_TOKEN)
 
-dp = Dispatcher()
+storage = RedisStorage.from_url(f"redis://:{REDIS_PASSWORD}@redis:6379")
+
+dp = Dispatcher(storage=storage)
 dp.message.outer_middleware(BlacklistMiddleware())
 dp.callback_query.outer_middleware(BlacklistMiddleware())
 
