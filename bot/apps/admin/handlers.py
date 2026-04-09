@@ -1,17 +1,13 @@
-from aiogram import Router, F, Bot
-from aiogram.types import CallbackQuery, Message
+from aiogram import Router, F
+from aiogram.types import CallbackQuery
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.utils.formatting import Text
-from datetime import datetime
-from zoneinfo import ZoneInfo
 
 from .middleware import AdminOnlyMiddleware
-from ..core.markup import get_confirmation_kb, get_cancel_btn
+from ..core.markup import get_confirmation_kb
 from ..core.handlers import ConfirmationSG
-from ..core.models import User
-from globals import TZ
+from ..api import UserClient
 
 router = Router()
 router.message.middleware(AdminOnlyMiddleware())
@@ -56,6 +52,10 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext):
     await state.clear()
     user_tg_id = int(state_data.get("user_tg_id"))
 
-    await User.blacklist(user_tg_id)
+    async with UserClient() as client:
+        user = await client.blacklist_user(user_tg_id)
 
-    await callback.message.answer("Done")
+    if user is None:
+        await callback.message.answer("User not found")
+    else:
+        await callback.message.answer("Done")

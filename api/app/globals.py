@@ -2,6 +2,7 @@ import os
 
 TG_TOKEN = os.getenv("TG_TOKEN")
 ADMIN_TG_ID = os.getenv("ADMIN_TG_ID")
+BOT_API_KEY = os.getenv("BOT_API_KEY")
 API_ALLOW_ORIGINS = os.getenv("API_ALLOW_ORIGINS").split(",")
 
 JWT_SECRET = os.getenv("JWT_SECRET")

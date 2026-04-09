@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timezone, timedelta
 from time import time
 
-from ..schemas import Token
+from schemas import TokenSchema
 from ..globals import TG_TOKEN, JWT_SECRET, JWT_ALGORITHM, JWT_EXP_SECONDS
 
 router = APIRouter(
@@ -17,8 +17,10 @@ router = APIRouter(
     tags=["auth"],
 )
 
-@router.post("/token", response_model=Token)
-async def issue_token(x_telegram_init_data: Annotated[str, Header()]) -> Token:
+@router.post("/token", response_model=TokenSchema)
+async def issue_token(
+    x_telegram_init_data: Annotated[str, Header()]
+) -> TokenSchema:
     """
     Exchange Telegram InitData for a JWT
     """
@@ -81,7 +83,7 @@ async def issue_token(x_telegram_init_data: Annotated[str, Header()]) -> Token:
         algorithm=JWT_ALGORITHM
     )
     
-    return Token(
+    return TokenSchema(
         access_token=token,
         token_type="bearer"
     )

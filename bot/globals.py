@@ -3,6 +3,8 @@ import os
 # Bot
 TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
+API_KEY=os.environ.get("API_KEY")
+API_URL=os.environ.get("API_URL")
 COMMANDS=[
     {
         "command": "/start",

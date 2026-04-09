@@ -2,6 +2,8 @@ services:
   api:
     build:
       context: ./api
+      additional_contexts:
+        shared: ./shared
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - API_ALLOW_ORIGINS=${API_ALLOW_ORIGINS}
@@ -9,6 +11,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - TG_TOKEN=${TG_TOKEN}
       - ADMIN_TG_ID=${ADMIN_TG_ID}
+      - BOT_API_KEY=${API_KEY}
     depends_on:
       - postgres
     networks:
@@ -35,9 +38,12 @@ services:
   bot:
     build:
       context: ./bot
+      additional_contexts:
+        shared: ./shared
     environment:
       - TG_TOKEN=${TG_TOKEN}
       - ADMIN_TG_ID=${ADMIN_TG_ID}
+      - API_KEY=${API_KEY}
       - TZ=${TZ}
       - API_URL=${API_URL}
       - POSTGRES_USER=${POSTGRES_USER}

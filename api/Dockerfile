@@ -5,6 +5,9 @@ WORKDIR /usr/src/app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY --from=shared . /usr/src/shared
+RUN pip install --no-cache-dir -e /usr/src/shared
+
 COPY . .
 EXPOSE 8000
 
