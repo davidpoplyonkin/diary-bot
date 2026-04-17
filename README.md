@@ -3,18 +3,28 @@
 An asynchronous Telegram bot designed for daily health monitoring. Built with Python 3 and the [aiogram 3](https://aiogram.dev/) framework, it allows users to log vital signs while providing administrators with powerful visualization tools.
 
 ### Key Features
-- **Metric Logging:** Users can submit individual metrics (e.g., weight) or grouped data (e.g., Blood Pressure: SBP, DBP, and Pulse).
-- **Data Persistence:** All entries are stored in a PostgreSQL database.
-- **Admin Notifications:** Real-time updates are sent to the administrator upon every user submission.
-- **Data Visualization:** The administrator can generate historical trend charts using Seaborn and Matplotlib based on a specific user's data.
-- **Smart Reminders:** Users can configure personalized notifications to prompt them for specific metrics at set times throughout the day.
-- **User Management:** Includes a blacklisting system for the administrator to manage access.
+- **Fully Asynchronous Stack:** Engineered for high concurrency using an end-to-end async stack: aiogram, FastAPI, SQLAlchemy (asyncpg), and Axios (React-based dashboard).
+- **Data Visualization:** Administrators can access interactive historical trend charts via a Telegram Mini App (TMA).
+- **Decoupled Architecture:** The bot and dashboard interact with the database through a standalone CRUD module rather than direct access.
+- **Shared Schemas:** Pydantic schemas are shared across the bot and API to eliminate code duplication and ensure strictly synchronized serialization logic.
+- **Stateless & Scalable:** Utilizes Redis for aiogram FSM (Finite State Machine) storage, ensuring the bot remains stateless and ready for horizontal scaling.
+- **Context-Aware Authentication:** The bot uses secure API Key authentication for backend communication, whereas the dashboard exchanges Telegram InitData for short-lived JWTs, providing secure session-based access.
+- **Smart Reminders:** Users can schedule daily notifications to prompt for specific metrics.
+- **Admin Tools:** Includes real-time submission alerts and a robust blacklisting system for user management.
 
-### Technologies
-- **Language:** Python
-- **Framework:** aiogram 3 (Asyncio)
-- **Database:** PostgreSQL (asyncpg)
-- **Visualization:** Seaborn, Matplotlib
+### Deployment & Architecture
+- **Dockerized Infrastructure:** Managed via docker-compose, orchestrating the bot, dashboard, PostgreSQL, Redis, FastAPI, and Nginx.
+- **Optimized Dashboard Delivery:** The React dashboard uses a two-stage Docker build (Vite build + Nginx runtime), resulting in a minimal footprint and high-performance static serving.
+- **Smart Routing:** A primary Nginx reverse proxy handles SSL termination and intelligently routes traffic to the dashboard and CRUD API.
+
+### Technical Stack & Tools
+- **Language:** Python / TypeScript
+- **Bot Framework:** aiogram
+- **Backend:** FastAPI + SQLAlchemy (Async)
+- **Database:** PostgreSQL + Alembic for version-controlled schema migrations.
+- **State:** Redis for FSM.
+- **Frontend:** React + Vite
+- **Visualization:** ApexCharts
 
 ## Getting Started
 ### Create the bot
@@ -45,8 +55,6 @@ In order to add a health metric, append a key value pair to `HEALTH_METRICS` in 
   }
 ```
 
-In order to add a chart for the new metric, implement an `elif metric == "<code>"` clause in `reply_chart` in `bot/charts.py`. It should save the image to `buffer = io.BytesIO()`.
-
 ### Adding Commands
 For non-admin commands, in addition to a handler, there should be a dictionary in the `COMMANDS` variable in `bot/globals.py`:
 
@@ -64,22 +72,28 @@ At the top level, add a `.env` file:
 # Bot
 TG_TOKEN=""
 ADMIN_TG_ID=""
-TZ="<IANA Timezone>"
+API_KEY="<key to the data access API>"
+TZ="<IANA timezone>"
+
+# API
+JWT_SECRET=""
+API_URL="<data access API url to be used by other components>"
+API_ALLOW_ORIGINS="<dashboard url for CORS>"
 
 # Postgres
 POSTGRES_USER=""
 POSTGRES_PASSWORD=""
+
+# Redis
+REDIS_PASSWORD=""
+
+# Dashboard
+DASHBOARD_URL="<dashboard url to be used by other components>"
 ```
+### Nginx
+Create [master-nginx-network](https://github.com/davidpoplyonkin/nested-proxy) and change the server name in `nginx/conf/nginx.conf`.
 
 ### Deployment
-Copy the `init.sql` script (it creates the datbases when the bot is launched for the first time) to the server. The destination should be the same as in "docker-compose.yml -> services -> postgres -> volumes":
-
 ```
-$ scp -r postgres <user>@<server_ip>:<absolute_path>/diary-bot/postgres
-```
-
-Assuming there is an [SSH key](https://www.youtube.com/watch?v=8ugcUTNoGj4) connecting the server and the local machine, the following command will start the application:
-```
-$ docker context create diary-bot-context --docker "host=ssh://<user>@<server_ip>"
-$ docker --context diary-bot-context compose up -d --build
+$ docker compose up -d --build
 ```
