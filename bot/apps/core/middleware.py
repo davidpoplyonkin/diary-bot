@@ -2,7 +2,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.formatting import Bold, Text, as_list
 
-from .models import User
+from ..api import UserClient
 
 class BlacklistMiddleware(BaseMiddleware):
     """
@@ -22,9 +22,11 @@ class BlacklistMiddleware(BaseMiddleware):
             # Ignore everything, else.
             return
 
-        user = await User.get_one(user_tg_id)
+        async with UserClient() as client:
+            user = await client.get_user(str(user_tg_id))
+
         if (user):
-            if (user.get("is_blacklisted")):
+            if (user.is_blacklisted):
                 
                 msg_lines = [
                     Text("🚫 ", Bold("Вас додано до чорного списку")),

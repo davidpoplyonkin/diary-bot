@@ -13,7 +13,7 @@ from ..core.markup import get_confirmation_kb
 from ..core.handlers import ConfirmationSG
 from .helpers import get_metric
 from globals import HEALTH_METRICS, ADMIN_TG_ID, TZ
-from .models import HealthMetric
+from ..api import HealthMetricClient
 
 router = Router()
 
@@ -59,13 +59,17 @@ async def btn_metric(callback: CallbackQuery, state: FSMContext):
     # Get today's date in the bot's timezone
     date_utc = datetime.now(ZoneInfo("UTC"))
     date_tz = date_utc.astimezone(ZoneInfo(TZ))
+    date_str = date_tz.strftime("%Y-%m-%d")
 
     # If the user already sent this metric today...
-    if await HealthMetric.get_many(
-        user_tg_id=callback.from_user.id,
-        date=date_tz,
-        metric=hm,
-    ):
+    async with HealthMetricClient() as client:
+        metric = await client.get_metric(
+            user_tg_id=str(callback.from_user.id),
+            metric=hm,
+            date=date_str
+        )
+
+    if metric is not None:
         msg_lines = [
             Text(Bold("Досягнуто ліміт вимірювань.")),
             Text(
@@ -214,8 +218,19 @@ async def btn_submit(callback: CallbackQuery, state: FSMContext, bot: Bot):
     date_utc = datetime.now(ZoneInfo("UTC"))
     date_tz = date_utc.astimezone(ZoneInfo(TZ))
 
+    # Getting "Not JSON serializable" with datetime.date
+    date_str = date_tz.strftime("%Y-%m-%d")
+
     # Save the results to the database
-    await HealthMetric.insert_many(user_tg_id, date_tz, metrics)
+    async with HealthMetricClient() as client:
+        await client.bulk_insert_metrics(
+            user_tg_id=str(user_tg_id),
+            metrics=[{ 
+                "metric": hm,
+                "value": v,
+                "date": date_str,
+            } for hm, v in metrics]
+        )
 
     # Send the user results to admin.
     msg_text = as_list(*summary_lines)

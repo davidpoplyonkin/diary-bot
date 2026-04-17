@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.formatting import Text, Bold, as_list
 
-from .models import User
+from ..api import UserClient
 from globals import COMMANDS
 
 router = Router()
@@ -20,10 +20,11 @@ async def cmd_start(message: Message):
     Answers to /start.
     """
 
-    await User.upsert_one(
-        tg_id=message.from_user.id,
-        full_name=message.from_user.full_name,
-    )
+    async with UserClient() as client:
+        await client.upsert_user(
+            tg_id=str(message.from_user.id),
+            full_name=message.from_user.full_name,
+        )
 
     msg_lines = [
         Text(Bold("Ласкаво просимо до BioGraph (Біометричні графіки)!")),

@@ -9,5 +9,6 @@ COPY --from=shared . /usr/src/shared
 RUN pip install --no-cache-dir -e /usr/src/shared
 
 COPY . .
+EXPOSE 8000
 
-CMD ["python", "main.py"]
+CMD alembic upgrade head && fastapi run app/main.py

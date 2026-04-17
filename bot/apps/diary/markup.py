@@ -1,6 +1,7 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types.web_app_info import WebAppInfo
 
-from globals import HEALTH_METRICS
+from globals import HEALTH_METRICS, DASHBOARD_URL
 
 def get_health_metrics_kb() -> InlineKeyboardBuilder:
     """
@@ -30,9 +31,14 @@ def get_summary_kb(user_tg_id, metric) -> InlineKeyboardBuilder:
 
     builder = InlineKeyboardBuilder()
 
+    # Open the dashboard mini-app
     builder.button(
         text="Chart",
-        callback_data=f"chart-{user_tg_id}-{metric}"
+        web_app=WebAppInfo(url=(
+            f"{DASHBOARD_URL}"
+            f"/?patient={user_tg_id}"
+            f"&metric={metric}"
+        ))
     )
 
     builder.button(

@@ -3,6 +3,8 @@ import os
 # Bot
 TG_TOKEN=os.environ.get("TG_TOKEN")
 ADMIN_TG_ID=os.environ.get("ADMIN_TG_ID")
+API_KEY=os.environ.get("API_KEY")
+API_URL=os.environ.get("API_URL")
 COMMANDS=[
     {
         "command": "/start",
@@ -81,3 +83,9 @@ HEALTH_METRICS = {
 # Postgres
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD")
 POSTGRES_USER = os.environ.get("POSTGRES_USER")
+
+# Redis
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+
+# Dashboard
+DASHBOARD_URL = os.environ.get("DASHBOARD_URL")
